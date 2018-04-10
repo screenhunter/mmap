@@ -38,14 +38,20 @@ static void
 handle_sigsegv(int sig, siginfo_t *si, void *ctx)
 {
   // Your code here.
+  // acquire the address of the page which contians the faulty address
   void* faulty = (void*)align_down((uintptr_t)si->si_addr, page_size);
-  if (!mmap((void*)faulty, page_size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0))
+  // map it to a new page
+  if (!mmap(faulty, page_size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0))
+    // if no page mapped, exit
     return;
+  // unmap old page
   munmap(last, page_size);
+  // set old page to be new page
   last = (void*)faulty;
-
+  // calculate offset
   int index = (double*)last - sqrts;
 
+  // initialize new page with sqrt values
   calculate_sqrts(faulty, index, page_size/sizeof(double));
 
   // replace these three lines with your implementation
