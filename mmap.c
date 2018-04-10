@@ -39,9 +39,9 @@ handle_sigsegv(int sig, siginfo_t *si, void *ctx)
 {
   // Your code here.
   void* faulty = (void*)align_down((uintptr_t)si->si_addr, page_size);
-  void* alloc = mmap((void*)faulty, page_size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-  if (last)
-    munmap(last, page_size);
+  if (!mmap((void*)faulty, page_size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0))
+    return;
+  munmap(last, page_size);
   last = (void*)faulty;
 
   int index = (double*)last - sqrts;
